@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+
+    <title>Docker Task 3</title>
+
+</head>
+
+<body>
+    <div class="container py-4">
+        <header class="pb-3 mb-4 border-bottom">
+            <a href="/" class="d-flex align-items-center text-dark text-decoration-none">
+                <span class="fs-4">Docker Task 3</span>
+            </a>
+        </header>
+        <div class="p-3 mb-4 bg-light rounded-3">
+            <div class="container-fluid py-5">
+                <h1 class="display-5 fw-bold">Post Manager</h1>
+                <p>
+                    <b>Hometask</b>: Написать Dockerfile для frontend располагается в директории /frontend, собрать и запустить.
+                </p>
+                <p>
+                    <b>Mode</b>: <span style="text-transform: capitalize;">{{ mode }}</span>
+                </p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-4 col-sm-12">
+                <form action="/api/post" method="post">
+                    <div class="mb-3">
+                        <label for="title" class="form-label">Title</label>
+                        <input type="text" class="form-control" id="title" name="title" placeholder="Post Title" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
+                    </div>
+                    <div class="mb-3 d-grid">
+                        <button type="submit" class="btn btn-primary">Add new post</button>
+                    </div>
+                </form>
+            </div>
+            <div class="col-lg-8 col-sm-12">
+                <h2>Posts list</h2>
+                <ul class="list-group" id="post-data">
+                    &nbsp;
+                </ul>
+            </div>
+        </div>
+    </div>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            function html_add_item(post) {
+                return `
+            <li class="list-group-item">
+                <h2 class="display-5 fw-bold">${post['title']}</h2>
+                <p class="col-md-8 fs-4">${post['description']}</p>
+            </li>`;
+            }
+
+            function load_data(data) {
+                $("#post-data").html("");
+                if (data['lenght'] > 0) {
+                    data['posts'].forEach(element => $("#post-data").append(html_add_item(element)));
+                }
+            }
+
+            function show_message(type) {
+                if (type == 'success') {
+                    $('form').after('<div class="alert alert-success" role="alert">Post success add</div>')
+                } else {
+                    $('form').after('<div class="alert alert-danger" role="alert">Add post fail</div>')
+                }
+                setTimeout(() => $('.alert').remove(), 2000);
+            }
+
+            function init_data() {
+                $.get("/api/post", function(data) {
+                    load_data(data);
+                });
+            }
+            $('form').submit(function(e) {
+                var $form = $(this);
+                $.ajax({
+                    type: $form.attr('method'),
+                    url: $form.attr('action'),
+                    data: $form.serialize()
+                }).done(function() {
+                    show_message('success');
+                    $form.trigger('reset');
+                    init_data();
+                }).fail(function() {
+                    show_message('fail');
+                });
+                e.preventDefault();
+            });
+            init_data();
+        });
+    </script>
+</body>
+
+</html>

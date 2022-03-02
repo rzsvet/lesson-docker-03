@@ -1,0 +1,66 @@
+version: "3"
+
+services:
+  db:
+    hostname: db
+    networks:
+      - db
+    environment:
+      - POSTGRES_PASSWORD
+    image: postgres:alpine3.14
+    restart: unless-stopped
+
+  backend:
+    hostname: backend
+    networks:
+      - frontend
+      - db
+    environment:
+      - DATABASE_URI=postgresql://postgres:${POSTGRES_PASSWORD}@db/
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      args:
+        - APP_PATH
+        - APP_MODE
+        - APP_PORT
+    expose:
+      - "${APP_PORT}"
+    restart: unless-stopped
+    depends_on:
+      - db
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://backend:${APP_PORT}/" ]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
+      start_period: 120s
+
+  frontend:
+    hostname: frontend
+    networks:
+      - frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        - APP_MODE
+        - APP_PORT
+    expose:
+      - "${APP_PORT}"
+    ports:
+      - "${APP_PORT}:${APP_PORT}"
+    restart: unless-stopped
+    depends_on:
+      - db
+      - backend
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://frontend:${APP_PORT}/" ]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
+      start_period: 120s
+
+networks:
+  frontend:
+  db:

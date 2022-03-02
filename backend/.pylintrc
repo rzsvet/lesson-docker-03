@@ -1,0 +1,2 @@
+[TYPECHECK]
+ignored-classes=SQLAlchemy,scoped_session
