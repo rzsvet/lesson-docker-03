@@ -1,4 +1,4 @@
-# Docker Task 3
+# DevOps Internship: Docker Task 3
 ## Hometask
 
 Написать docker-compose.yaml, для всего проекта, собрать и запустить.
